@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康管理紀錄器</title>
+    
+    <style>
+        /* 基本樣式 */
+        body {
+            font-family: 'Helvetica', 'Arial', '微軟正黑體', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 網頁主標題 */
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 30px;
+        }
+
+        /* 每個功能模組的樣式 */
+        .module {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .module h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            color: #0056b3;
+        }
+
+        /* 輸入框和按鈕的共用樣式 */
+        input[type="number"],
+        input[type="datetime-local"],
+        button {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin: 5px 0;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 表單元素的佈局 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* 結果顯示區域 */
+        .result-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e6f7ec;
+            border-radius: 5px;
+        }
+
+        /* 久坐計時器顯示 */
+        #sedentary-timer-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            color: #dc3545;
+            margin: 20px 0;
+        }
+
+        /* 紀錄列表 */
+        .log-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 10px;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>健康管理紀錄器</h1>
+
+        <section class="module" id="water-tracker">
+            <h2>💧 喝水紀錄</h2>
+            <div class="form-group">
+                <label for="water-amount">輸入喝水量 (mL)：</label>
+                <input type="number" id="water-amount" placeholder="例如：250">
+                <button id="add-water">新增紀錄</button>
+            </div>
+            <div class="result-display">
+                今日總喝水量：<span id="total-water">0</span> mL
+            </div>
+            <h3>喝水日誌：</h3>
+            <ul id="water-log" class="log-list">
+                </ul>
+        </section>
+
+        <section class="module" id="sedentary-tracker">
+            <h2>🧘 久坐時間管理</h2>
+            <p>設定一個計時器（例如30分鐘），時間到會提醒您起來走動。</p>
+            <div id="sedentary-timer-display">30:00</div>
+            <button id="start-sedentary-timer">開始 30 分鐘計時</button>
+            <button id="reset-sedentary-timer">重設計時器</button>
+        </section>
+
+        <section class="module" id="sleep-tracker">
+            <h2>😴 睡眠時間管理</h2>
+            <div class="form-group">
+                <label for="sleep-start">上床時間：</label>
+                <input type="datetime-local" id="sleep-start">
+            </div>
+            <div class="form-group">
+                <label for="sleep-end">起床時間：</label>
+                <input type="datetime-local" id="sleep-end">
+            </div>
+            <button id="calculate-sleep">計算睡眠</button>
+            <div id="sleep-duration" class="result-display">
+                總睡眠時間將顯示在這裡
+            </div>
+            <h3>睡眠日誌：</h3>
+            <ul id="sleep-log" class="log-list">
+                </ul>
+        </section>
+
+    </div>
+
+    <script>
+        // "DOMContentLoaded" 確保在執行 JS 之前，HTML 頁面已完全載入
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. 喝水紀錄功能 ---
+            const waterAmountInput = document.getElementById('water-amount');
+            const addWaterBtn = document.getElementById('add-water');
+            const totalWaterDisplay = document.getElementById('total-water');
+            const waterLog = document.getElementById('water-log');
+            let currentTotalWater = 0;
+
+            addWaterBtn.addEventListener('click', () => {
+                const amount = parseInt(waterAmountInput.value);
+
+                // 簡單的輸入驗證
+                if (isNaN(amount) || amount <= 0) {
+                    alert('請輸入有效的數字');
+                    return;
+                }
+
+                // 更新總水量
+                currentTotalWater += amount;
+                totalWaterDisplay.textContent = currentTotalWater;
+
+                // 新增到日誌
+                const logEntry = document.createElement('li');
+                const time = new Date().toLocaleTimeString(); // 取得目前時間
+                logEntry.textContent = `[${time}] 新增 ${amount} mL`;
+                waterLog.prepend(logEntry); // prepend 使最新紀錄在最上面
+
+                // 清空輸入框
+                waterAmountInput.value = '';
+            });
+
+            // --- 2. 久坐時間管理功能 ---
+            const startTimerBtn = document.getElementById('start-sedentary-timer');
+            const resetTimerBtn = document.getElementById('reset-sedentary-timer');
+            const timerDisplay = document.getElementById('sedentary-timer-display');
+            
+            let timerInterval; // 用於存放計時器
+            let secondsRemaining = 30 * 60; // 30 分鐘 * 60 秒
+            const defaultMinutes = 30;
+
+            // 更新計時器顯示的函式
+            function updateTimerDisplay() {
+                const minutes = Math.floor(secondsRemaining / 60);
+                const seconds = secondsRemaining % 60;
+                // '0' + seconds 是為了補零 (例如 09, 08...)
+                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            startTimerBtn.addEventListener('click', () => {
+                // 如果計時器已在執行，先清除
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+
+                // 開始新的計時器
+                timerInterval = setInterval(() => {
+                    secondsRemaining--;
+                    updateTimerDisplay();
+
+                    if (secondsRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        alert('久坐時間到！請起來走動一下！');
+                        // 重設回預設時間
+                        secondsRemaining = defaultMinutes * 60;
+                        updateTimerDisplay();
+                    }
+                }, 1000); // 每 1000 毫秒 (1秒) 執行一次
+            });
+
+            resetTimerBtn.addEventListener('click', () => {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                secondsRemaining = defaultMinutes * 60;
+                updateTimerDisplay();
+                alert('計時器已重設');
+            });
+
+
+            // --- 3. 睡眠時間管理功能 ---
+            const sleepStartInput = document.getElementById('sleep-start');
+            const sleepEndInput = document.getElementById('sleep-end');
+            const calculateSleepBtn = document.getElementById('calculate-sleep');
+            const sleepDurationDisplay = document.getElementById('sleep-duration');
+            const sleepLog = document.getElementById('sleep-log');
+
+            calculateSleepBtn.addEventListener('click', () => {
+                const startDate = new Date(sleepStartInput.value);
+                const endDate = new Date(sleepEndInput.value);
+
+                // 驗證時間
+                if (isNaN(startDate) || isNaN(endDate)) {
+                    alert('請輸入有效的開始與結束時間');
+                    return;
+                }
+
+                if (endDate <= startDate) {
+                    alert('結束時間必須晚於開始時間');
+                    return;
+                }
+
+                // 計算時間差 (毫秒)
+                const diffMs = endDate - startDate;
+
+                // 轉換為小時和分鐘
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                const durationText = `總共 ${diffHours} 小時 ${diffMins} 分鐘`;
+                sleepDurationDisplay.textContent = durationText;
+
+                // 新增到日誌
+                const logEntry = document.createElement('li');
+                const startStr = startDate.toLocaleString();
+                const endStr = endDate.toLocaleString();
+                logEntry.textContent = `${durationText} (從 ${startStr} 到 ${endStr})`;
+                sleepLog.prepend(logEntry);
+            });
+        });
+    </script>
+
+</body>
+</html>
