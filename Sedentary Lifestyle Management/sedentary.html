@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sedentary Reminder</title>
+
+    <!-- Link to Sedentary CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <section class="module" id="sedentary-tracker">
+            <h2>🧘 Sedentary Reminder</h2>
+            <p>Set a timer (e.g., 30 mins) to remind yourself to get up and move.</p>
+
+            <div id="sedentary-timer-display">30:00</div>
+
+            <button id="start-sedentary-timer">Start 30-Min Timer</button>
+            <button id="reset-sedentary-timer">Reset Timer</button>
+        </section>
+    </div>
+
+    <script>
+        // --- Sedentary Timer Logic ---
+        const startTimerBtn = document.getElementById('start-sedentary-timer');
+        const resetTimerBtn = document.getElementById('reset-sedentary-timer');
+        const timerDisplay = document.getElementById('sedentary-timer-display');
+        
+        let timerInterval;
+        let secondsRemaining = 30 * 60; 
+        const defaultMinutes = 30;
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(secondsRemaining / 60);
+            const seconds = secondsRemaining % 60;
+            timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        startTimerBtn.addEventListener('click', () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            timerInterval = setInterval(() => {
+                secondsRemaining--;
+                updateTimerDisplay();
+
+                if (secondsRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Time is up! Get up and move around!');
+                    secondsRemaining = defaultMinutes * 60;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        });
+
+        resetTimerBtn.addEventListener('click', () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            secondsRemaining = defaultMinutes * 60;
+            updateTimerDisplay();
+            alert('Timer reset.');
+        });
+
+        // Initialize display on page load
+        updateTimerDisplay();
+    </script>
+
+</body>
+</html>
 
