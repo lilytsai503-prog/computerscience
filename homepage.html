@@ -1,1 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 
+    <style>
+        /* === Hamburger Menu CSS === */
+        
+        /* 修改 1: 頂部導覽列樣式變更 */
+        .header-bar {
+            background-color: transparent; /* 背景變透明 (原本是 #333) */
+            color: #333; /* 圖示變成深灰色 (原本是 white) */
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* Menu Icon */
+        .menu-icon {
+            font-size: 30px;
+            cursor: pointer;
+            margin-right: 20px;
+            line-height: 1;
+            /* 讓按鈕看起來更明顯一點，可以加個外框 (選用) */
+            /* border: 1px solid #ccc; */
+            /* padding: 5px; */
+            /* border-radius: 4px; */
+        }
+
+        /* Side Navigation */
+        .sidenav {
+            height: 100%;
+            width: 0; 
+            position: fixed;
+            z-index: 999;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 60px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+        }
+
+        .sidenav a {
+            padding: 10px 10px 10px 32px;
+            text-decoration: none;
+            font-size: 20px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidenav a:hover {
+            color: #f1f1f1;
+            background-color: #333;
+        }
+
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #overlay {
+            position: fixed;
+            display: none;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 500;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay" onclick="closeNav()"></div>
+
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        
+        <a href="index.html" style="color: white;">📊 Dashboard</a>
+        <a href="profile.html">👤 User Profile</a>
+        <a href="water.html">💧 Water Tracker</a>
+        <a href="sedentary.html">🧘 Sedentary Timer</a>
+        <a href="sleep.html">😴 Sleep Manager</a>
+    </div>
+
+    <div class="header-bar">
+        <span class="menu-icon" onclick="openNav()">&#9776;</span>
+    </div>
+
+    <div class="container" style="margin-top: 0px;">
+        <h2>👋 Welcome Back</h2>
+        <p>Click the menu icon (☰) to access tools.</p>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>💧 Water Today</h3>
+                <div class="stat-number" id="display-water">0</div>
+                <span>mL</span>
+            </div>
+            <div class="stat-card">
+                <h3>😴 Last Sleep</h3>
+                <div class="stat-number" id="display-sleep">--</div>
+                <span>hours</span>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <button onclick="clearAllData()" style="background-color: #6c757d; width: auto; font-size: 0.9em;">Clear All Data</button>
+        </div>
+    </div>
+
+    <script>
+        // === Menu Control Logic ===
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "250px"; 
+            document.getElementById("overlay").style.display = "block"; 
+        }
+
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0"; 
+            document.getElementById("overlay").style.display = "none"; 
+        }
+
+        // === Data Logic ===
+        window.onload = function() {
+            const water = localStorage.getItem('totalWater') || 0;
+            document.getElementById('display-water').textContent = water;
+
+            const sleep = localStorage.getItem('lastSleep') || '--';
+            document.getElementById('display-sleep').textContent = sleep;
+        };
+
+        function clearAllData() {
+            if(confirm('Are you sure you want to clear all data?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+
+</body>
+</html>
