@@ -85,13 +85,41 @@
         const alertBox = document.getElementById('alertBox');
         const cupWater = document.getElementById('cupWater');
 
-        let records = JSON.parse(localStorage.getItem('waterRecords') || '[]');
-        const dailyGoal = 2000;
+// 讀取飲水紀錄
+let records = JSON.parse(localStorage.getItem('waterRecords') || '[]');
 
-        function getTodayTotal() {
-            const today = new Date().toLocaleDateString();
-            return records.filter(r => r.date === today).reduce((a, b) => a + b.amount, 0);
-        }
+// ⬇️ 讀取體重（假設存成 { weight: 50 } 這樣）
+let profile = JSON.parse(localStorage.getItem('profile') || '{}');
+
+// ⬇️ 設定每日目標
+let dailyGoal = 2000;  // 預設 2000 c.c.
+
+if (profile.weight && Number(profile.weight) > 0) {
+    dailyGoal = Number(profile.weight) * 30;  
+}
+
+// 計算今日飲水總量
+function getTodayTotal() {
+    const today = new Date().toLocaleDateString();
+    return records
+        .filter(r => r.date === today)
+        .reduce((a, b) => a + b.amount, 0);
+}
+
+// 更新水杯 + 是否達標
+function updateCup() {
+    const total = getTodayTotal();
+    const ratio = Math.min(total / dailyGoal, 1);
+    const height = 100 - ratio * 100;
+    cupWater.style.height = height + "%";
+
+    // 顯示已達標
+    const alertBox = document.getElementById('alertBox');
+    if (total >= dailyGoal) {
+        alertBox.innerHTML = `<span class="badge ok">🎉 本日飲水已達標！</span>`;
+    }
+}
+
 
         function updateCup() {
             const total = getTodayTotal();
