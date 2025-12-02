@@ -1,54 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Climbing Stairs Calculator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
-            background-color: #f7f7f7;
-            text-align: center;
-        }
-        input, button {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
-        }
-        #result {
-            font-weight: bold;
-            margin-top: 20px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climbing Stairs Calculator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        background-color: #f7f7f7;
+    }
+
+    /* 側邊欄 */
+    .sidebar {
+        width: 220px;
+        background-color: #333;
+        color: white;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar h2 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .sidebar a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 0;
+        margin: 5px 0;
+        border-radius: 5px;
+    }
+
+    .sidebar a:hover {
+        background-color: #444;
+    }
+
+    /* 主內容區 */
+    .main {
+        flex: 1;
+        padding: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    input, button {
+        padding: 10px;
+        margin: 10px;
+        font-size: 16px;
+    }
+
+    #result {
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+</style>
 </head>
 <body>
+
+<div class="sidebar">
+    <h2>Menu</h2>
+    <a href="#">Home</a>
+    <a href="#">Climbing Stairs</a>
+    <a href="#">Linear Search</a>
+    <a href="#">Binary Search</a>
+    <a href="#">About</a>
+</div>
+
+<div class="main">
     <h1>Climbing Stairs Calculator</h1>
     <p>Enter the number of stairs:</p>
     <input type="number" id="stairs" min="0" placeholder="Number of stairs">
     <button onclick="calculateWays()">Calculate</button>
     <div id="result"></div>
+</div>
 
-    <script>
-        function calculateWays() {
-            let n = parseInt(document.getElementById("stairs").value);
-            if (isNaN(n) || n < 0) {
-                document.getElementById("result").innerText = "Please enter a valid non-negative number!";
-                return;
-            }
+<script>
+function calculateWays() {
+    let n = parseInt(document.getElementById("stairs").value);
+    if (isNaN(n) || n < 0) {
+        document.getElementById("result").innerText = "Please enter a valid non-negative number!";
+        return;
+    }
 
-            // Dynamic programming array
-            let dp = new Array(n + 2).fill(0);
-            dp[0] = 1; // 0 stairs has 1 way
-            dp[1] = 1; // 1 stair has 1 way
+    // Dynamic programming array
+    let dp = new Array(n + 2).fill(0);
+    dp[0] = 1; // 0 stairs has 1 way
+    dp[1] = 1; // 1 stair has 1 way
 
-            for (let i = 2; i <= n; i++) {
-                dp[i] = dp[i - 1] + dp[i - 2];
-            }
+    for (let i = 2; i <= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
 
-            document.getElementById("result").innerText = 
-                `Number of ways to climb ${n} stairs: ${dp[n]}`;
-        }
-    </script>
+    document.getElementById("result").innerText = 
+        `Number of ways to climb ${n} stairs: ${dp[n]}`;
+}
+</script>
+
 </body>
 </html>
