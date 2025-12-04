@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stairs Tracker</title>
     <link rel="stylesheet" href="style.css">
-    <style>.header-bar { background-color: transparent; }</style>
+    <style>
+        .header-bar { background-color: transparent; }
+        .container { padding: 20px; font-family: Arial, sans-serif; }
+        #stairs-display { font-size: 24px; margin: 10px 0; }
+        input { padding: 5px; margin-right: 10px; }
+        button { padding: 5px 10px; margin-right: 5px; }
+        .secondary { background-color: #ccc; }
+    </style>
 </head>
 <body>
     <div id="overlay" onclick="closeNav()"></div>
@@ -24,17 +31,27 @@
         <span class="menu-icon" onclick="openNav()">&#9776;</span>
     </div>
 
-    <div class="container" style="margin-top: 0;">
+    <div class="container">
         <h2>🪜 Stairs Tracker</h2>
-        <p>Click the button every time you complete one floor.</p>
+        <p>Click +1 every time you complete one floor, or enter floors to calculate stairs.</p>
 
-        <div id="stairs-display">0 Floors</div>
+        <!-- 按 +1 樓層 -->
+        <div>
+            <button id="add-floor-btn">+1 Floor</button>
+            <button id="reset-floor-btn" class="secondary">Reset Count</button>
+        </div>
 
-        <button id="add-floor-btn">+1 Floor</button>
-        <button id="reset-floor-btn" class="secondary">Reset Count</button>
+        <div id="stairs-display">0 Floors / 0 Stairs</div>
+
+        <!-- 輸入樓層自動算樓梯 -->
+        <div style="margin-top: 15px;">
+            <input type="number" id="floor-input" placeholder="Enter floors" min="0">
+            <button id="calculate-btn">Calculate Stairs</button>
+        </div>
     </div>
 
     <script>
+        // 側邊欄功能
         function openNav() { 
             document.getElementById("mySidenav").style.width = "250px"; 
             document.getElementById("overlay").style.display = "block"; 
@@ -44,23 +61,38 @@
             document.getElementById("overlay").style.display = "none"; 
         }
 
+        const stairsPerFloor = 20; // 每層樓梯數
+        let floors = 0;
+
         const addBtn = document.getElementById('add-floor-btn');
         const resetBtn = document.getElementById('reset-floor-btn');
         const display = document.getElementById('stairs-display');
 
-        let floors = 0;
+        const input = document.getElementById('floor-input');
+        const calculateBtn = document.getElementById('calculate-btn');
 
+        // 更新顯示
         function updateDisplay() {
-            display.textContent = `${floors} Floor${floors === 1 ? '' : 's'}`;
+            const totalStairs = floors * stairsPerFloor;
+            display.textContent = `${floors} Floor${floors === 1 ? '' : 's'} / ${totalStairs} Stairs`;
         }
 
+        // +1 樓層按鈕
         addBtn.addEventListener('click', () => {
             floors++;
             updateDisplay();
         });
 
+        // 重置
         resetBtn.addEventListener('click', () => {
             floors = 0;
+            updateDisplay();
+        });
+
+        // 輸入樓層自動算樓梯
+        calculateBtn.addEventListener('click', () => {
+            const inputFloors = parseInt(input.value) || 0;
+            floors = inputFloors;
             updateDisplay();
         });
 
