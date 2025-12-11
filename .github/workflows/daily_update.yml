@@ -1,0 +1,43 @@
+name: Daily Food Data Update
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  
+  workflow_dispatch:
+
+  repository_dispatch:
+    types: [trigger_update]
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas deep-translator requests
+
+    - name: Run update script
+      run: python update_data.py
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        git add food_database.json
+        # Only commit if there are changes
+        git commit -m "Auto-update food database" || echo "No changes to commit"
+        git push
