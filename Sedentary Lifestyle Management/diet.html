@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diet Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <style>.header-bar { background-color: transparent; }</style>
+</head>
+<body>
+    <div id="overlay" onclick="closeNav()"></div>
+    <div id="toast"></div>
+
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="index.html">📊 Dashboard</a>
+        <a href="profile.html">👤 User Profile</a>
+        <a href="diet.html" style="color: white;">🍎 Diet Tracker</a>
+        <a href="walking.html">👣 Walking</a>
+        <a href="water.html">💧 Water Tracker</a>
+        <a href="sedentary.html">🪑 Sedentary Timer</a>
+        <a href="stairs.html">🪜 Stairs Tracker</a>
+        <a href="sleep.html">😴 Sleep Manager</a>
+        <a href="exercise.html">🏃 Exercise</a>
+    </div>
+
+    <div class="header-bar">
+        <span class="menu-icon" onclick="openNav()">&#9776;</span>
+    </div>
+
+    <div class="container" style="margin-top: 0;">
+        <h2>🍎 Diet Tracker</h2>
+        
+        <div style="overflow: hidden; margin-bottom: 10px;">
+            <button onclick="triggerGitHubUpdate()" id="apiBtn" class="api-btn">⚡ Update DB</button>
+        </div>
+
+        <div class="dashboard-panel">
+            <h3>🔥 Calories Today</h3>
+            <div class="total-cal-display" id="display-total-cal">0</div>
+            <div class="limit-text">
+                Target: <span id="target-cal">--</span> kcal 
+                <span id="status-text">(Calc...)</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="cal-progress" class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <div style="position: relative;">
+            <label>Search Food:</label>
+            <div class="search-wrapper">
+                <input type="text" id="food-input" placeholder="e.g. Rice, Egg..." autocomplete="off">
+                <div id="search-results"></div>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 30px;">Today's Menu</h3>
+        <div id="food-log">
+            <div style="text-align:center; color:#999; margin-top:20px;">No food logged yet.</div>
+        </div>
+
+        <div style="text-align:center; margin-top:30px;">
+            <button onclick="clearDiet()" class="danger-btn small">Clear All</button>
+        </div>
+    </div>
+
+    <script>
+        function openNav() { document.getElementById("mySidenav").style.width = "250px"; document.getElementById("overlay").style.display = "block"; }
+        function closeNav() { document.getElementById("mySidenav").style.width = "0"; document.getElementById("overlay").style.display = "none"; }
+        function showToast(msg) {
+            const t = document.getElementById("toast"); t.textContent = msg; t.className = "show";
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+        }
+
+        let foodDatabase = [];
+        fetch('food_database.json')
+            .then(res => res.json())
+            .then(data => { foodDatabase = data; })
+            .catch(e => {
+                foodDatabase = [
+                    { "zh": "白飯", "en": "White Rice", "cal": 280 },
+                    { "zh": "雞胸肉", "en": "Chicken Breast", "cal": 165 },
+                    { "zh": "雞蛋", "en": "Egg", "cal": 78 },
+                    { "zh": "蘋果", "en": "Apple", "cal": 52 },
+                    { "zh": "拿鐵", "en": "Latte", "cal": 190 }
+                ];
+            });
+
+        let todayFoods = JSON.parse(localStorage.getItem('dietRecords') || '[]');
+        
+        const pWeight = Number(localStorage.getItem('profileWeight')) || 70;
+        const pHeight = Number(localStorage.getItem('profileHeight')) || 170;
+        const pAge = Number(localStorage.getItem('profileAge')) || 25;
+        
+        let bmr = (10 * pWeight) + (6.25 * pHeight) - (5 * pAge) - 78;
+        let tdee = Math.round(bmr * 1.2); 
+
+        const searchInput = document.getElementById('food-input');
+        const resultsBox = document.getElementById('search-results');
+        const foodLog = document.getElementById('food-log');
+        const displayTotal = document.getElementById('display-total-cal');
+        const targetDisplay = document.getElementById('target-cal');
+        const statusText = document.getElementById('status-text');
+        const progressBar = document.getElementById('cal-progress');
+
+        function triggerGitHubUpdate() {
+            if(!confirm("Update Database via GitHub?")) return;
+            const btn = document.getElementById('apiBtn');
+            btn.disabled = true; btn.textContent = "Requesting...";
+
+            fetch('/api/trigger') 
+            .then(response => {
+                if(response.ok) showToast("Update triggered");
+                else showToast("API Error");
+                btn.disabled = false; btn.textContent = "⚡ Update DB";
+            })
+            .catch(err => {
+                showToast("Network Error");
+                btn.disabled = false; btn.textContent = "⚡ Update DB";
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            resultsBox.innerHTML = '';
+            if (val.length < 1) { resultsBox.style.display = 'none'; return; }
+
+            const matches = foodDatabase.filter(item => 
+                item.zh.includes(val) || (item.en && item.en.toLowerCase().includes(val))
+            );
+
+            if (matches.length > 0) {
+                resultsBox.style.display = 'block';
+                matches.slice(0, 10).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'result-item';
+                    div.innerHTML = `<span class="food-name">${item.zh}</span><span class="food-cal">${item.cal} kcal</span>`;
+                    div.onclick = () => addFood(item);
+                    resultsBox.appendChild(div);
+                });
+            } else {
+                resultsBox.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput) resultsBox.style.display = 'none';
+        });
+
+        function addFood(item) {
+            const record = { id: Date.now(), name: item.zh, cal: Number(item.cal) };
+            todayFoods.unshift(record);
+            saveAndRender();
+            searchInput.value = '';
+            resultsBox.style.display = 'none';
+            showToast(`Added: ${item.zh}`);
+        }
+
+        window.deleteFood = function(id) {
+            todayFoods = todayFoods.filter(f => f.id !== id);
+            saveAndRender();
+        }
+
+        window.clearDiet = function() {
+            if(confirm('Clear all?')) {
+                todayFoods = [];
+                saveAndRender();
+                showToast('Cleared');
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('dietRecords', JSON.stringify(todayFoods));
+            
+            const total = todayFoods.reduce((sum, item) => sum + item.cal, 0);
+            displayTotal.textContent = total;
+            localStorage.setItem('todayCalories', total);
+
+            targetDisplay.textContent = tdee;
+            const pct = Math.min(100, (total / tdee) * 100);
+            progressBar.style.width = pct + "%";
+            
+            if(total > tdee) {
+                statusText.textContent = "(Surplus ⚠️)";
+                statusText.style.color = "red";
+                progressBar.style.background = "red";
+            } else {
+                statusText.textContent = "(On Track)";
+                statusText.style.color = "green";
+                progressBar.style.background = "#e67e22";
+            }
+
+            foodLog.innerHTML = '';
+            if (todayFoods.length === 0) {
+                foodLog.innerHTML = '<div style="text-align:center; color:#999; margin-top:20px;">No food logged yet.</div>';
+                return;
+            }
+
+            todayFoods.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'food-list-item';
+                div.innerHTML = `<div><div style="font-weight:bold;">${f.name}</div></div><div style="display:flex; align-items:center; gap:10px;"><span style="color:#e67e22; font-weight:bold;">${f.cal}</span><button class="danger-btn small" onclick="deleteFood(${f.id})" style="padding:2px 8px;">×</button></div>`;
+                foodLog.appendChild(div);
+            });
+        }
+
+        saveAndRender();
+    </script>
+</body>
+</html>
