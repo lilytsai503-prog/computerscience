@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: '3.9'
 
-    - name: Install dependencies
+    - name: Install dependencies (包含翻譯和請求套件)
       run: |
         python -m pip install --upgrade pip
         pip install pandas deep-translator requests
@@ -38,9 +38,15 @@ jobs:
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
         
-        # 修改這裡：加入正確路徑的檔案
-        git add Sedentary_Lifestyle_Management/food_database.json
+        # 加入 CSV 檔案本身，確保 Action 運行時能讀取到它
+        git add ${{ github.event.repository.name }}/food_database.json
+        git add ${{ github.event.repository.name }}/food_database.backup.json
+        git add ${{ github.event.repository.name }}/{{ YOUR_CSV_FILE_NAME }}  # 這裡的 CSV 檔案名稱需要手動替換
+
+        # 這裡用您上傳的 CSV 名稱
+        git add "食品營養成分資料庫2024UPDATE2.xlsx - 工作表1.csv"
+        git add Sedentary_Lifestyle_Management/food_database.json 
         
         # 如果有變動才 commit
-        git commit -m "Auto-update food database" || echo "No changes to commit"
+        git commit -m "Auto-update food database with local CSV and translations" || echo "No changes to commit"
         git push
