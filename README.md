@@ -1,1 +1,1 @@
-This web is about health management
+This "Health Management" website proposal is a highly efficient and integrated online tool , which combines complex health data tracking with personalized goal setting. Through a simple browser interface , users can easily access and manage all key health indicators , effectively digitizing and automating daily health management , and offering a comprehensive solution for promoting user well-being.
